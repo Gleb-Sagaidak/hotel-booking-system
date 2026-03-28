@@ -6,7 +6,7 @@ import com.booking.hotel.roomservice.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
+
 
 
 import java.util.List;
@@ -15,8 +15,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RoomService {
     private final RoomRepository roomRepository;
-    private final KafkaTemplate<String, String> kafkaTemplate;
-    private final ObjectMapper objectMapper;
+    private final KafkaTemplate<String, RoomPriceEvent> kafkaTemplate;
+
 
     public void createRoom(Room room) {
         Room savedRoom = roomRepository.save(room);
@@ -37,16 +37,20 @@ public class RoomService {
         return roomRepository.findById(roomId).orElse(null);
     }
     private void sendPriceRoomEvent(Room room) {
-        try {
-            RoomPriceEvent event = new RoomPriceEvent(room.getId(), room.getPrice());
+        RoomPriceEvent event = new RoomPriceEvent(room.getId(), room.getPrice());
+        kafkaTemplate.send("room-prices", event);
+        System.out.println("JSON sent to Kafka: " + event);
 
-            String jsonEvent = objectMapper.writeValueAsString(event);
-
-            kafkaTemplate.send("room-prices", jsonEvent);
-            System.out.println("JSON sent to Kafka: " + jsonEvent);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            RoomPriceEvent event = new RoomPriceEvent(room.getId(), room.getPrice());
+//
+//            String jsonEvent = objectMapper.writeValueAsString(event);
+//
+//            kafkaTemplate.send("room-prices", jsonEvent);
+//            System.out.println("JSON sent to Kafka: " + jsonEvent);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
 
