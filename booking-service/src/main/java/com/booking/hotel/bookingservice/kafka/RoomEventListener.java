@@ -3,7 +3,6 @@ package com.booking.hotel.bookingservice.kafka;
 import com.booking.hotel.bookingservice.dto.RoomPriceEvent;
 import com.booking.hotel.bookingservice.entity.RoomInfo;
 import com.booking.hotel.bookingservice.repository.RoomInfoRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -20,11 +19,8 @@ public class RoomEventListener {
     @KafkaListener(topics = "room-prices", groupId = "booking-groupv2")
     public void consumeRoomPrice(String message) {
         String cleanMessage = message.trim().replaceAll("^[^\\{]*", "");
-
-        System.out.println("CLEAN MESSAGE: " + cleanMessage);
-
         try {
-//            log.info("Received kafka message: " + message);
+            log.info("Received kafka message: " + message);
             if (cleanMessage.isEmpty()) return;
             RoomPriceEvent event = objectMapper.readValue(message, RoomPriceEvent.class);
 
@@ -33,10 +29,9 @@ public class RoomEventListener {
             roomInfo.setPricePerNight(event.getPrice());
 
             roomInfoRepository.save(roomInfo);
-//            log.info("Room info update for " + event.getRoomId());
+            log.info("Room info update for " + event.getRoomId());
         }catch (Exception e) {
-//            log.error("Error parsing json: ",e);
-            e.printStackTrace();
+            log.error("Error parsing json: ",e);
         }
     }
 }
