@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
@@ -14,4 +15,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "and b.enteringDate < :leavingDate " +
             "and b.leavingDate > :startDate")
     boolean hasOverlappingBookings(Long roomId, LocalDate enteringDate, LocalDate leavingDate);
+
+    @Query("select b.roomId from  Booking b " +
+            "where b.enteringDate < :leavingDate " +
+            "and b.leavingDate > :enteringDate")
+    List<Long> bookedRoomsByDates(LocalDate enteringDate, LocalDate leavingDate);
 }

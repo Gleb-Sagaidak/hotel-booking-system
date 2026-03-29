@@ -12,7 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -44,5 +46,11 @@ public class BookingService {
         Double pricePerNight = roomInfo.getPricePerNight();
         long days = ChronoUnit.DAYS.between(request.getEnteringDate(), request.getLeavingDate());
         return pricePerNight * days;
+    }
+
+    public List<RoomInfo> findAvailableRooms(LocalDate enteringDate, LocalDate leavingDate) {
+        return List.copyOf(roomInfoRepository.findAllByRoomIdNotIn(
+                bookingRepository.bookedRoomsByDates(enteringDate, leavingDate)
+        ));
     }
 }
