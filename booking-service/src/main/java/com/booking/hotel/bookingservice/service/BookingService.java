@@ -7,6 +7,8 @@ import com.booking.hotel.bookingservice.entity.RoomInfo;
 import com.booking.hotel.bookingservice.repository.BookingRepository;
 import com.booking.hotel.bookingservice.repository.RoomInfoRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,22 +22,27 @@ public class BookingService {
     @Transactional
     public String createBooking(BookingRequestDTO bookingRequest){
         if (bookingRequest.getEnteringDate().isAfter(bookingRequest.getLeavingDate())) {
-            throw new RuntimeException("Entering date is after leaving date");
+            throw new RuntimeException("Entering date is after leaving date");//make Response Entity
         }
-        RoomInfo roomInfo = roomInfoRepository.findById(bookingRequest.getRoomId()).orElse(null);
-        if (roomInfo == null) {
-            throw new RuntimeException("Room not found");
+        if (bookingRepository.hasOverlappingBookings(bookingRequest.getRoomId(),
+                bookingRequest.getEnteringDate(), bookingRequest.getLeavingDate())) {
+            throw new RuntimeException("Overlapping bookings, room is not available for this date");//make responeseEntity
         }
-        Double pricePerNight = roomInfo.getPricePerNight();
         Booking booking = new Booking();
         booking.setRoomId(bookingRequest.getRoomId());
         booking.setClientId(bookingRequest.getClientId());
         booking.setEnteringDate(bookingRequest.getEnteringDate());
         booking.setLeavingDate(bookingRequest.getLeavingDate());
-        long days = ChronoUnit.DAYS.between(booking.getEnteringDate(), booking.getLeavingDate());
-        Double totalCost = pricePerNight * days;
-        booking.setCost(totalCost);
+        booking.setCost(calculateTotalCost(bookingRequest));
         bookingRepository.save(booking);
-        return "Booking created with ID " + booking.getBookingId();
+        return "Booking created with ID " + booking.getBookingId();// make response Entity
+    }
+    private Double calculateTotalCost(BookingRequestDTO request) {
+        RoomInfo roomInfo = roomInfoRepository.findById(request.getRoomId()).
+                orElseThrow(() -> new RuntimeException("Room not found"));
+
+        Double pricePerNight = roomInfo.getPricePerNight();
+        long days = ChronoUnit.DAYS.between(request.getEnteringDate(), request.getLeavingDate());
+        return pricePerNight * days;
     }
 }
