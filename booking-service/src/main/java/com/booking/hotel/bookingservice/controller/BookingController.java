@@ -1,7 +1,7 @@
 package com.booking.hotel.bookingservice.controller;
 
 import com.booking.hotel.bookingservice.dto.BookingRequestDTO;
-import com.booking.hotel.bookingservice.dto.RoomPriceEvent;
+import com.booking.hotel.bookingservice.entity.Booking;
 import com.booking.hotel.bookingservice.entity.RoomInfo;
 import com.booking.hotel.bookingservice.service.BookingService;
 import jakarta.validation.Valid;
@@ -31,5 +31,26 @@ public class BookingController {
             @RequestParam("enteringDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate enteringDate,
             @RequestParam("leavingDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate leavingDate) {
         return bookingService.findAvailableRooms(enteringDate, leavingDate);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> cancelBooking(@PathVariable Long id) {
+        String result = bookingService.cancelBooking(id);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateBooking(@PathVariable Long id, @RequestBody BookingRequestDTO request){
+        String result = bookingService.updateBooking(id, request);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Booking> getBookingDetails(@PathVariable Long id){
+        return ResponseEntity.status(HttpStatus.OK).body(bookingService.getBookingDetails(id));
+    }
+    @GetMapping("/client/{clientId}")
+    public ResponseEntity<List<Booking>> getClientBookings(@PathVariable Long clientId){
+        return ResponseEntity.status(HttpStatus.OK).body(bookingService.findBookingsByClientId(clientId));
     }
 }

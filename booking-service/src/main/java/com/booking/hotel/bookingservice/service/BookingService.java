@@ -3,12 +3,11 @@ package com.booking.hotel.bookingservice.service;
 
 import com.booking.hotel.bookingservice.dto.BookingRequestDTO;
 import com.booking.hotel.bookingservice.entity.Booking;
+import com.booking.hotel.bookingservice.entity.BookingState;
 import com.booking.hotel.bookingservice.entity.RoomInfo;
 import com.booking.hotel.bookingservice.repository.BookingRepository;
 import com.booking.hotel.bookingservice.repository.RoomInfoRepository;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,5 +51,44 @@ public class BookingService {
         return List.copyOf(roomInfoRepository.findAllByRoomIdNotIn(
                 bookingRepository.bookedRoomsByDates(enteringDate, leavingDate)
         ));
+    }
+
+    public String cancelBooking(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() ->
+                new RuntimeException("Booking not found"));
+        booking.setState(BookingState.CANCELLED);
+        bookingRepository.save(booking);
+        return "Booking cancelled with ID " + booking.getBookingId();
+    }
+    public String updateBooking(Long bookingId, BookingRequestDTO bookingRequest){
+        Booking existingBooking = bookingRepository.findById(bookingId).orElseThrow(
+                () -> new RuntimeException("Booking not found")
+        );
+        if (bookingRequest.getEnteringDate().isAfter(bookingRequest.getLeavingDate())) {
+            throw new RuntimeException("Entering date is after leaving date");
+        }
+        boolean isOverLapping = bookingRepository.hasOverlappingBookingsExcludingSelf(bookingRequest.getRoomId(),
+                bookingRequest.getEnteringDate(), bookingRequest.getLeavingDate(), bookingId);
+        if (isOverLapping) {
+            throw new RuntimeException("Overlapping bookings, you cannot choose these dates");
+        }
+        existingBooking.setLeavingDate(bookingRequest.getLeavingDate());
+        existingBooking.setEnteringDate(bookingRequest.getEnteringDate());
+        existingBooking.setCost(calculateTotalCost(bookingRequest));
+        bookingRepository.save(existingBooking);
+        return "Booking successfully updated with ID " + existingBooking.getBookingId();
+    }
+
+    public Booking getBookingDetails(Long bookingId) {
+        return bookingRepository.findById(bookingId).orElseThrow(
+                () -> new RuntimeException("Booking not found")
+        );
+    }
+    public List<Booking> findBookingsByClientId(Long clientId) {
+        List<Booking> bookings =  bookingRepository.findBookingsByClientId(clientId);
+        if (bookings.isEmpty()) {
+            throw new RuntimeException("No bookings found for client ID " + clientId);
+        }
+        return bookings;
     }
 }
