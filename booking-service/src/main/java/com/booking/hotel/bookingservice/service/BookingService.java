@@ -24,11 +24,11 @@ public class BookingService {
     @Transactional
     public String createBooking(BookingRequestDTO bookingRequest){
         if (bookingRequest.getEnteringDate().isAfter(bookingRequest.getLeavingDate())) {
-            throw new RuntimeException("Entering date is after leaving date");//make Response Entity
+            throw new RuntimeException("Entering date is after leaving date");
         }
         if (bookingRepository.hasOverlappingBookings(bookingRequest.getRoomId(),
                 bookingRequest.getEnteringDate(), bookingRequest.getLeavingDate())) {
-            throw new RuntimeException("Overlapping bookings, room is not available for this date");//make responeseEntity
+            throw new RuntimeException("Overlapping bookings, room is not available for this date");
         }
         Booking booking = new Booking();
         booking.setRoomId(bookingRequest.getRoomId());
@@ -37,7 +37,7 @@ public class BookingService {
         booking.setLeavingDate(bookingRequest.getLeavingDate());
         booking.setCost(calculateTotalCost(bookingRequest));
         bookingRepository.save(booking);
-        return "Booking created with ID " + booking.getBookingId();// make response Entity
+        return "Booking created with ID " + booking.getBookingId();
     }
     private Double calculateTotalCost(BookingRequestDTO request) {
         RoomInfo roomInfo = roomInfoRepository.findById(request.getRoomId()).

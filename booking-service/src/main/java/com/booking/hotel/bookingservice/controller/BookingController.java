@@ -7,6 +7,8 @@ import com.booking.hotel.bookingservice.service.BookingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -18,8 +20,10 @@ import java.util.List;
 public class BookingController {
     private final BookingService bookingService;
     @PostMapping
-    public String createBooking(@Valid @RequestBody BookingRequestDTO bookingRequest){
-        return bookingService.createBooking(bookingRequest);
+    public ResponseEntity<?> createBooking(@Valid @RequestBody BookingRequestDTO bookingRequest){
+        String response = bookingService.createBooking(bookingRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
     }
 
     @GetMapping("/find")
