@@ -24,8 +24,8 @@ public class BookingController {
 
     @GetMapping("/find")
     public List<RoomInfo> getAvailableRooms(
-            @RequestParam("localDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate enteringDate,
-            @RequestParam("localDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate leavingDate) {
+            @RequestParam("enteringDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate enteringDate,
+            @RequestParam("leavingDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate leavingDate) {
         return bookingService.findAvailableRooms(enteringDate, leavingDate);
     }
 }
