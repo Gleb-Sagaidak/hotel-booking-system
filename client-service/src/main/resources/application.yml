@@ -1,0 +1,16 @@
+server:
+  port: 8083
+spring:
+  application:
+    name: client-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5435/client_db
+    username: user
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
