@@ -34,3 +34,12 @@ services:
       POSTGRES_PASSWORD: password
     ports:
       - "5434:5432"
+
+  client-db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: client_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5435:5432"
